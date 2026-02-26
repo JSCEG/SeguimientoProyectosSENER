@@ -102,10 +102,10 @@ const SEGUIMIENTO_PROYECTOS_MAPS = [
                     console.log('🔗 [SeguimientoProyectos] Generando enlace para central:', id); // Debug Log
                     const btnHtml = `
                         <div style="margin-top: 12px; text-align: center; border-top: 1px solid #eee; padding-top: 8px;">
-                            <a href="detalle-central.html?permiso=${encodeURIComponent(id)}" target="_blank"
-                               style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background-color: #FF8F00; color: white; text-decoration: none; border-radius: 20px; font-size: 13px; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: transform 0.2s;">
+                            <button onclick="window.open('detalle-central.html?permiso=${encodeURIComponent(id)}', '_blank')"
+                               style="display: inline-flex; align-items: center; gap: 6px; border: none; padding: 8px 16px; background-color: #FF8F00; color: white; text-decoration: none; border-radius: 20px; font-size: 13px; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer;">
                                 <i class="bi bi-eye-fill"></i> Ver Detalle Completo
-                            </a>
+                            </button>
                         </div>
                     `;
 
@@ -268,6 +268,159 @@ const SEGUIMIENTO_PROYECTOS_MAPS = [
                         { label: 'Municipio', value: properties.MUNICIPIO || 'N/A' }
                     ]
                 })
+            },
+            {
+                type: 'nuevos_proyectos',
+                name: 'Seguimiento de Nuevos Proyectos (Google Sheets)',
+                category: 'domain', // domain para que se cargue de inmediato al seleccionar el mapa
+                customLoader: async function (layerOptions) {
+                    console.log("Iniciando customLoader para Seguimiento de Nuevos Proyectos...");
+                    const API_URL = 'https://script.google.com/macros/s/AKfycbw3heMgQJWmvUW3prcamUEQn07sldIBGZTH5WVG8Pu2t-a0mwdmfSyD27jR4fj9Ws-0yg/exec';
+
+                    let clusterGroup = L.markerClusterGroup({
+                        maxClusterRadius: 40,
+                        spiderfyOnMaxZoom: true,
+                        showCoverageOnHover: false,
+                        zoomToBoundsOnClick: true,
+                        clusterPane: 'electricityMarkersPane',
+                        iconCreateFunction: function (cluster) {
+                            return L.divIcon({
+                                html: `<div style="background-color: #9B2247; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);">${cluster.getChildCount()}</div>`,
+                                className: 'custom-cluster-icon',
+                                iconSize: L.point(30, 30)
+                            });
+                        }
+                    });
+
+                    try {
+                        const response = await fetch(API_URL);
+                        const result = await response.json();
+
+                        if (result.status !== 'success' || !result.data) {
+                            throw new Error('Respuesta del servidor indicó fallo o data nula.');
+                        }
+
+                        let marcadores = [];
+
+                        // Cargar Generacion
+                        if (result.data['BBDD.GEN'] && result.data['BBDD.GEN'].length > 1) {
+                            const rawData = result.data['BBDD.GEN'];
+                            const headerMapping = rawData[0];
+                            const filasDatos = rawData.slice(1);
+
+                            filasDatos.forEach(row => {
+                                let obj = {};
+                                for (let key in row) {
+                                    if (key.startsWith('Columna_') && headerMapping[key] !== undefined) {
+                                        obj[headerMapping[key].toString().trim()] = row[key];
+                                    }
+                                }
+
+                                if (obj.Latitud && obj.Longitud) {
+                                    let lat = parseFloat(obj.Latitud.toString().replace(/°/g, '').trim());
+                                    let lng = parseFloat(obj.Longitud.toString().replace(/°/g, '').trim());
+
+                                    if (!isNaN(lat) && !isNaN(lng)) {
+                                        const uniqueIdGen = obj['Nombre del proyecto'] || obj['Nombre de la obra'] || '';
+                                        const btnHtmlGen = uniqueIdGen ? `
+                                            <div style="margin-top: 12px; text-align: center; border-top: 1px solid #eee; padding-top: 8px;">
+                                                <button onclick="window.open('detalle-nuevo-proyecto.html?permiso=${encodeURIComponent(uniqueIdGen)}', '_blank')"
+                                                   style="display: inline-flex; align-items: center; gap: 6px; border: none; padding: 8px 16px; background-color: #FF8F00; color: white; text-decoration: none; border-radius: 20px; font-size: 13px; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer;">
+                                                    <i class="bi bi-eye-fill"></i> Ver Detalle Completo
+                                                </button>
+                                            </div>` : '';
+
+                                        const popupContent = window.createStandardPopup({
+                                            title: obj['Nombre del proyecto'] || 'Generación',
+                                            subtitle: obj['Tecnología'] || 'N/D',
+                                            icon: 'bi-lightning-fill',
+                                            color: '#0D47A1',
+                                            details: [
+                                                { label: 'Capacidad', value: `${obj['Capacidad'] || '?'} MW` },
+                                                { label: 'Empresa', value: `${obj['Empresa'] || 'N/D'}` }
+                                            ]
+                                        });
+
+                                        const m = L.circleMarker([lat, lng], { radius: 8, color: '#0D47A1', fillColor: '#2196F3', fillOpacity: 0.9, weight: 2, pane: 'electricityMarkersPane' })
+                                            .bindPopup(popupContent + btnHtmlGen);
+                                        marcadores.push(m);
+                                    }
+                                }
+                            });
+                        }
+
+                        // Cargar Transmision
+                        if (result.data['BBDD.TRA'] && result.data['BBDD.TRA'].length > 1) {
+                            const rawData = result.data['BBDD.TRA'];
+                            const headerMapping = rawData[0];
+                            const filasDatos = rawData.slice(1);
+
+                            filasDatos.forEach(row => {
+                                let obj = {};
+                                for (let key in row) {
+                                    if (key.startsWith('Columna_') && headerMapping[key] !== undefined) {
+                                        obj[headerMapping[key].toString().trim()] = row[key];
+                                    }
+                                }
+
+                                if (obj.Latitud && obj.Longitud && obj.Latitud.toString().trim() !== '' && obj.Longitud.toString().trim() !== '') {
+                                    let lat = parseFloat(obj.Latitud.toString().replace(/°/g, '').trim());
+                                    let lng = parseFloat(obj.Longitud.toString().replace(/°/g, '').trim());
+
+                                    if (!isNaN(lat) && !isNaN(lng)) {
+                                        const customIcon = L.divIcon({
+                                            className: 'custom-tx-marker',
+                                            html: '<div style="background-color: #7B1FA2; width: 14px; height: 14px; border: 2px solid #fff; border-radius: 3px; box-shadow: 0 1px 3px rgba(0,0,0,0.5);"></div>',
+                                            iconSize: [18, 18],
+                                            iconAnchor: [9, 9]
+                                        });
+
+                                        const uniqueIdTx = obj['Nombre del proyecto'] || obj['Nombre de la obra'] || '';
+                                        const btnHtmlTx = uniqueIdTx ? `
+                                            <div style="margin-top: 12px; text-align: center; border-top: 1px solid #eee; padding-top: 8px;">
+                                                <button onclick="window.open('detalle-nuevo-proyecto.html?permiso=${encodeURIComponent(uniqueIdTx)}', '_blank')"
+                                                   style="display: inline-flex; align-items: center; gap: 6px; border: none; padding: 8px 16px; background-color: #FF8F00; color: white; text-decoration: none; border-radius: 20px; font-size: 13px; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer;">
+                                                    <i class="bi bi-eye-fill"></i> Ver Detalle Completo
+                                                </button>
+                                            </div>` : '';
+
+                                        const popupContentTx = window.createStandardPopup({
+                                            title: obj['Nombre del proyecto'] || 'Transmisión',
+                                            subtitle: `Tensión: ${obj['Tensión ( kV)'] || '?'} kV`,
+                                            icon: 'bi-bezier',
+                                            color: '#7B1FA2',
+                                            details: []
+                                        });
+
+                                        const m = L.marker([lat, lng], { icon: customIcon, pane: 'electricityMarkersPane' })
+                                            .bindPopup(popupContentTx + btnHtmlTx);
+                                        marcadores.push(m);
+                                    }
+                                }
+                            });
+                        }
+
+                        clusterGroup.addLayers(marcadores);
+
+                        // Guardar la referencia global en mapa para luego (para limpieza, etc)
+                        if (window.map) {
+                            window.map._nuevosProyectosCluster = clusterGroup;
+                        }
+
+                        // Mostrar el Tablero Sidebar (está mapeado al ID de Iframe en main map)
+                        const toggleBtn = document.getElementById('sidebar-toggle-btn');
+                        const iframe = document.getElementById('proyectos-sidebar-iframe');
+                        if (toggleBtn) {
+                            toggleBtn.classList.add('visible');
+                            if (iframe) iframe.classList.remove('hidden-sidebar');
+                        }
+
+                        return clusterGroup; // Retornamos para que AddOverlay lo reciba e inyecte
+                    } catch (e) {
+                        console.error("Error cargando Google Sheets:", e);
+                        throw e;
+                    }
+                }
             }
         ],
         center: [23.6345, -102.5528], // Centro de México
@@ -279,3 +432,58 @@ const SEGUIMIENTO_PROYECTOS_MAPS = [
 
 // Hacer disponible globalmente
 window.SEGUIMIENTO_PROYECTOS_MAPS = SEGUIMIENTO_PROYECTOS_MAPS;
+
+// Lógica de Toggle y Recepción de Mensajes (iframe)
+document.addEventListener('DOMContentLoaded', () => {
+    const toggleBtn = document.getElementById('sidebar-toggle-btn');
+    const iframe = document.getElementById('proyectos-sidebar-iframe');
+
+    if (toggleBtn && iframe) {
+        // Toggle Manual
+        toggleBtn.addEventListener('click', () => {
+            iframe.classList.toggle('hidden-sidebar');
+        });
+
+        // Ocultar botón por defecto si cambia el Select de Mapa Principal (por si se agrega otro en el futuro)
+        document.getElementById('map-select')?.addEventListener('change', (e) => {
+            const val = e.target.options[e.target.selectedIndex].text;
+            if (!val.includes('Infraestructura Eléctrica')) {
+                toggleBtn.classList.remove('visible');
+                iframe.classList.add('hidden-sidebar');
+
+                // Limpiar CustomLayers si cambian el instrumento
+                if (window.map && window.map._nuevosProyectosCluster) {
+                    window.map.removeLayer(window.map._nuevosProyectosCluster);
+                    window.map._nuevosProyectosCluster = null;
+                }
+            } else {
+                toggleBtn.classList.add('visible');
+                iframe.classList.remove('hidden-sidebar');
+            }
+        });
+    }
+
+    // Escuchar mensajes desde el Iframe
+    window.addEventListener('message', function (event) {
+        if (event.data) {
+            if (event.data.action === 'flyToProject' && window.map) {
+                const lat = parseFloat(event.data.lat);
+                const lng = parseFloat(event.data.lng);
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    // Volar al punto en el mapa princpal
+                    window.map.flyTo([lat, lng], 14, {
+                        animate: true,
+                        duration: 1.5
+                    });
+
+                    // En móviles, cerramos el sidebar para que dejen ver el mapa (responsive hack)
+                    if (window.innerWidth < 768 && iframe) {
+                        iframe.classList.add('hidden-sidebar');
+                    }
+                }
+            } else if (event.data.action === 'closeSidebar' && iframe) {
+                iframe.classList.add('hidden-sidebar');
+            }
+        }
+    });
+});

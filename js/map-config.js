@@ -1060,7 +1060,17 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
                     };
                 }
-                const loadedLayer = await loadGeoJSON(cfg.url, layerOptions);
+                let loadedLayer = null;
+                if (typeof cfg.customLoader === 'function') {
+                    console.log(`🔍 Llamando a customLoader para capa perezosa: ${cfg.type}`);
+                    try {
+                        loadedLayer = await cfg.customLoader(layerOptions);
+                    } catch (errCustom) {
+                        console.error(`Error en customLoader para capa perezosa ${cfg.type}:`, errCustom);
+                    }
+                } else {
+                    loadedLayer = await loadGeoJSON(cfg.url, layerOptions);
+                }
                 if (loadedLayer) {
                     // Asegurar que no quede dentro de instrumentLayerGroup
                     if (instrumentLayerGroup && instrumentLayerGroup.hasLayer(loadedLayer)) {
@@ -10155,7 +10165,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                         console.log('🟡 Cargando capas adicionales (Generico)');
                         for (const additionalLayer of mapConfig.additionalLayers) {
-                            if (additionalLayer.url && additionalLayer.type) {
+                            if ((additionalLayer.url || additionalLayer.customLoader) && additionalLayer.type) {
                                 const isAnalysis = (additionalLayer.category === 'analysis') ||
                                     (['ramsar', 'anp', 'advc', 'usumacinta'].includes(additionalLayer.type));
                                 const layerName = additionalLayer.name || additionalLayer.type;
@@ -10172,7 +10182,8 @@ document.addEventListener('DOMContentLoaded', function () {
                                         url: additionalLayer.url,
                                         type: additionalLayer.type,
                                         style: additionalLayer.style,
-                                        popup: additionalLayer.popup
+                                        popup: additionalLayer.popup,
+                                        customLoader: additionalLayer.customLoader
                                     });
                                     const cat = 'analysis';
                                     layerInventory[cat].push({ name: layerName, type: additionalLayer.type, url: additionalLayer.url });
@@ -10216,8 +10227,19 @@ document.addEventListener('DOMContentLoaded', function () {
                                             }
                                         };
                                     }
-                                    console.log(`🔍 Cargando capa esencial: ${additionalLayer.type || 'Sin tipo'} desde ${additionalLayer.url}`);
-                                    const newLayer = await loadGeoJSON(additionalLayer.url, layerOptions);
+                                    let newLayer = null;
+                                    try {
+                                        if (typeof additionalLayer.customLoader === 'function') {
+                                            console.log(`🔍 Llamando a customLoader para capa esencial: ${additionalLayer.type}`);
+                                            newLayer = await additionalLayer.customLoader(layerOptions);
+                                        } else {
+                                            console.log(`🔍 Cargando capa esencial: ${additionalLayer.type || 'Sin tipo'} desde ${additionalLayer.url}`);
+                                            newLayer = await loadGeoJSON(additionalLayer.url, layerOptions);
+                                        }
+                                    } catch (errLoad) {
+                                        console.error(`Error cargando capa ${additionalLayer.type}:`, errLoad);
+                                        newLayer = null;
+                                    }
                                     if (newLayer) {
                                         console.log(`✅ Capa esencial cargada: ${additionalLayer.type}`);
                                         // Remover de instrumentLayerGroup para controlar con el Layer Control
