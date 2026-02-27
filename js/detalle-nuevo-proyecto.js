@@ -229,46 +229,75 @@ function renderGeneralInfo(feature) {
 
 function renderProgressSemaphore(properties) {
     const semaphoreContainer = document.getElementById('project-semaphore');
+    const detailsContainer = document.getElementById('semaphore-details');
     if (!semaphoreContainer) return;
 
     // Lógica Demo para determinar el estado de las etapas (Verde, Amarillo, Rojo, Gris/Inactivo)
-    // En un escenario real, esto vendría mapeado directamente de Google Sheets.
-
-    // Asumimos 4 etapas principales: Solicitud, Evaluación, Resolución, Construcción/Operación
     const estatusTramite = (properties['Estatus del trámite'] || '').toLowerCase();
 
+    // Asumimos 5 etapas principales: Solicitud, Evaluación Técnica, EVIS, Resolución, Construcción
     let stages = [
-        { id: 'solicitud', label: 'Ingreso Solicitud', desc: 'Documentación recibida', status: 'green', icon: 'bi-file-earmark-check' },
-        { id: 'evaluacion', label: 'Evaluación Técnica', desc: 'Revisión en proceso', status: 'yellow', icon: 'bi-search' },
-        { id: 'resolucion', label: 'Resolución SENER', desc: 'Emisión de dictamen', status: 'gray', icon: 'bi-award' },
-        { id: 'construccion', label: 'Inicio de Obras', desc: 'Fase de construcción', status: 'gray', icon: 'bi-cone-striped' }
+        {
+            id: 'solicitud', label: 'Ingreso Solicitud', desc: 'Documentación recibida', status: 'green', icon: 'bi-file-earmark-check',
+            details: `<strong>Fecha de Recepción:</strong> ${properties['Fecha de recepción de la solicitud'] || 'N/D'}<br>
+                      <strong>Promovente:</strong> ${properties['Promovente'] || 'N/D'}<br>
+                      <strong>Tipo de Proyecto:</strong> ${properties['Tecnología'] || properties['Tipo de tecnología'] || 'N/D'}`
+        },
+        {
+            id: 'evaluacion', label: 'Evaluación Técnica', desc: 'Revisión técnica en proceso', status: 'yellow', icon: 'bi-search',
+            details: `<strong>Área Evaluadora:</strong> Dirección General de Generación y Transmisión de Energía Eléctrica<br>
+                      <strong>Capacidad a instalar:</strong> ${formatNumber(properties['Capacidad a instalar (MW)'], 'MW')}<br>
+                      <strong>Estatus actual:</strong> ${properties['Estatus del trámite'] || 'En análisis'}`
+        },
+        {
+            id: 'evis', label: 'Ev. Impacto Social (EVIS)', desc: 'Análisis de impacto social', status: 'yellow', icon: 'bi-people',
+            details: `<strong>Estatus EVIS:</strong> ${properties['Estatus de la Evaluación de Impacto Social'] || properties['Estatus EVIS'] || 'En proceso / Pendiente'}<br>
+                      <strong>Presencia Indígena:</strong> ${properties['Presencia de comunidades indígenas'] || 'No determinado'}<br>
+                      <strong>Resolutivo:</strong> ${properties['Resolutivo de la Evaluación de Impacto Social'] || properties['Resolutivo EVIS'] || 'N/D'}`
+        },
+        {
+            id: 'resolucion', label: 'Resolución SENER', desc: 'Emisión de dictamen', status: 'gray', icon: 'bi-award',
+            details: `<strong>Fecha de Resolución:</strong> ${properties['Fecha de emisión de resolución por parte de SENER'] || 'Pendiente'}<br>
+                      <strong>Sentido:</strong> ${estatusTramite.includes('otorgad') || estatusTramite.includes('autorizad') ? 'Autorizado' : 'Pendiente'}<br>
+                      <strong>Número de Oficio:</strong> ${properties['Número de Oficio de Resolución'] || 'N/D'}`
+        },
+        {
+            id: 'construccion', label: 'Inicio de Obras', desc: 'Fase de construcción', status: 'gray', icon: 'bi-cone-striped',
+            details: `<strong>Inicio Estimado:</strong> ${properties['Fecha estimada de inicio de obras'] || 'Pendiente'}<br>
+                      <strong>Operación Comercial:</strong> ${properties['Fecha estimada de operación comercial'] || 'Pendiente'}<br>
+                      <strong>Inversión Estimada:</strong> ${properties['Inversión estimada'] ? formatNumber(properties['Inversión estimada'], 'USD') : 'N/D'}`
+        }
     ];
 
     // Simular lógica basada en el 'Estatus del trámite'
     if (estatusTramite.includes('otorgad') || estatusTramite.includes('autorizad') || estatusTramite.includes('emitid') || estatusTramite.includes('aprobado')) {
         stages[1].status = 'green';
-        stages[2].status = 'green'; // Resolución lista
-        stages[3].status = 'yellow'; // Asumimos que empieza construcción
+        stages[2].status = 'green'; // Asumimos EVIS aprobado si ya hay resolución favorable
+        stages[3].status = 'green'; // Resolución lista
+        stages[4].status = 'yellow'; // Asumimos que empieza construcción
     } else if (estatusTramite.includes('evaluación') || estatusTramite.includes('análisis') || estatusTramite.includes('proceso') || estatusTramite.includes('trámite')) {
         stages[1].status = 'yellow';
+        // EVIS podría estar en proceso también
+        stages[2].status = Math.random() > 0.5 ? 'yellow' : 'green'; // Aleatorio para propósitos de demo
     } else if (estatusTramite.includes('requerimiento') || estatusTramite.includes('prevención') || estatusTramite.includes('desechad') || estatusTramite.includes('suspendid')) {
         stages[1].status = 'red'; // Problema en evaluación
+        stages[2].status = 'yellow';
     }
 
     // Si hay fecha de inicio de obras, avanzar
     if (properties['Fecha estimada de inicio de obras']) {
-        stages[3].status = 'green';
+        stages[4].status = 'green';
     }
 
     // Renderizado del semáforo
-    const html = stages.map((stage) => {
+    const html = stages.map((stage, index) => {
         let statusClass = '';
         if (stage.status === 'green') statusClass = 'status-green';
         if (stage.status === 'yellow') statusClass = 'status-yellow';
         if (stage.status === 'red') statusClass = 'status-red';
 
         return `
-            <div class="semaphore-step ${statusClass}">
+            <div class="semaphore-step ${statusClass}" data-stage-index="${index}" style="cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
                 <div class="semaphore-line"></div>
                 <div class="semaphore-icon">
                     <i class="bi ${stage.icon}"></i>
@@ -280,6 +309,37 @@ function renderProgressSemaphore(properties) {
     }).join('');
 
     semaphoreContainer.innerHTML = html;
+
+    // Interacciones (clicks en las etapas)
+    const stepElements = semaphoreContainer.querySelectorAll('.semaphore-step');
+    stepElements.forEach(step => {
+        step.addEventListener('click', function () {
+            // Remover estilos visuales de selección (opcional, p.ej. borde más grueso u opacidad)
+            stepElements.forEach(s => s.style.opacity = '0.6');
+            this.style.opacity = '1';
+
+            const index = this.getAttribute('data-stage-index');
+            const stage = stages[index];
+
+            if (detailsContainer) {
+                detailsContainer.style.display = 'block';
+                let alertColor = stage.status === 'green' ? 'var(--color-gobmx-verde)' :
+                    stage.status === 'red' ? 'var(--color-gobmx-guinda)' :
+                        stage.status === 'yellow' ? 'var(--color-gobmx-dorado)' : '#999';
+
+                detailsContainer.style.borderLeftColor = alertColor;
+                detailsContainer.innerHTML = `
+                    <h4 style="margin-top: 0; color: ${alertColor}; font-weight: 700;">
+                        <i class="bi ${stage.icon}"></i> ${stage.label} - Detalles Técnicos
+                    </h4>
+                    <p style="font-size: 0.9rem; color: var(--color-text-secondary); margin-bottom: 12px;">${stage.desc}</p>
+                    <div style="font-size: 0.95rem; line-height: 1.6; background: #fff; padding: 12px; border-radius: 4px; border: 1px solid #eee;">
+                        ${stage.details}
+                    </div>
+                `;
+            }
+        });
+    });
 }
 
 function formatNumber(value, unit) {
