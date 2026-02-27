@@ -223,6 +223,63 @@ function renderGeneralInfo(feature) {
             <span class="info-value">${item.value || 'N/D'}</span>
         </li>
     `).join('');
+
+    renderProgressSemaphore(properties);
+}
+
+function renderProgressSemaphore(properties) {
+    const semaphoreContainer = document.getElementById('project-semaphore');
+    if (!semaphoreContainer) return;
+
+    // Lógica Demo para determinar el estado de las etapas (Verde, Amarillo, Rojo, Gris/Inactivo)
+    // En un escenario real, esto vendría mapeado directamente de Google Sheets.
+
+    // Asumimos 4 etapas principales: Solicitud, Evaluación, Resolución, Construcción/Operación
+    const estatusTramite = (properties['Estatus del trámite'] || '').toLowerCase();
+
+    let stages = [
+        { id: 'solicitud', label: 'Ingreso Solicitud', desc: 'Documentación recibida', status: 'green', icon: 'bi-file-earmark-check' },
+        { id: 'evaluacion', label: 'Evaluación Técnica', desc: 'Revisión en proceso', status: 'yellow', icon: 'bi-search' },
+        { id: 'resolucion', label: 'Resolución SENER', desc: 'Emisión de dictamen', status: 'gray', icon: 'bi-award' },
+        { id: 'construccion', label: 'Inicio de Obras', desc: 'Fase de construcción', status: 'gray', icon: 'bi-cone-striped' }
+    ];
+
+    // Simular lógica basada en el 'Estatus del trámite'
+    if (estatusTramite.includes('otorgad') || estatusTramite.includes('autorizad') || estatusTramite.includes('emitid') || estatusTramite.includes('aprobado')) {
+        stages[1].status = 'green';
+        stages[2].status = 'green'; // Resolución lista
+        stages[3].status = 'yellow'; // Asumimos que empieza construcción
+    } else if (estatusTramite.includes('evaluación') || estatusTramite.includes('análisis') || estatusTramite.includes('proceso') || estatusTramite.includes('trámite')) {
+        stages[1].status = 'yellow';
+    } else if (estatusTramite.includes('requerimiento') || estatusTramite.includes('prevención') || estatusTramite.includes('desechad') || estatusTramite.includes('suspendid')) {
+        stages[1].status = 'red'; // Problema en evaluación
+    }
+
+    // Si hay fecha de inicio de obras, avanzar
+    if (properties['Fecha estimada de inicio de obras']) {
+        stages[3].status = 'green';
+    }
+
+    // Renderizado del semáforo
+    const html = stages.map((stage) => {
+        let statusClass = '';
+        if (stage.status === 'green') statusClass = 'status-green';
+        if (stage.status === 'yellow') statusClass = 'status-yellow';
+        if (stage.status === 'red') statusClass = 'status-red';
+
+        return `
+            <div class="semaphore-step ${statusClass}">
+                <div class="semaphore-line"></div>
+                <div class="semaphore-icon">
+                    <i class="bi ${stage.icon}"></i>
+                </div>
+                <div class="semaphore-label">${stage.label}</div>
+                <div class="semaphore-desc">${stage.desc}</div>
+            </div>
+        `;
+    }).join('');
+
+    semaphoreContainer.innerHTML = html;
 }
 
 function formatNumber(value, unit) {

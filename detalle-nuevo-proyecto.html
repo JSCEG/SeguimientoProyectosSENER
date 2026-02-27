@@ -240,6 +240,75 @@
             color: var(--color-gobmx-guinda);
         }
 
+        /* --- Estilos para el Semáforo de Avance --- */
+        .semaphore-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            flex: 1;
+            min-width: 120px;
+            position: relative;
+        }
+
+        .semaphore-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: white;
+            margin-bottom: 8px;
+            background-color: var(--color-gobmx-gris-claro);
+            border: 3px solid white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            z-index: 2;
+        }
+
+        .semaphore-step.status-green .semaphore-icon {
+            background-color: var(--color-gobmx-verde);
+        }
+
+        .semaphore-step.status-yellow .semaphore-icon {
+            background-color: var(--color-gobmx-dorado);
+        }
+
+        .semaphore-step.status-red .semaphore-icon {
+            background-color: var(--color-gobmx-guinda);
+        }
+
+        .semaphore-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+        }
+
+        .semaphore-desc {
+            font-size: 0.75rem;
+            color: var(--color-text-secondary);
+            margin-top: 4px;
+        }
+
+        .semaphore-line {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            width: 100%;
+            height: 4px;
+            background-color: var(--color-gobmx-gris-claro);
+            z-index: 1;
+        }
+
+        .semaphore-step:last-child .semaphore-line {
+            display: none;
+        }
+
+        .semaphore-step.status-green .semaphore-line {
+            background-color: var(--color-gobmx-verde);
+        }
+
         .analysis-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -362,6 +431,23 @@
     </header>
 
     <div class="grid-container">
+        <!-- Main Content: Progress Tracker (Semáforo) -->
+        <main class="detail-main" style="grid-column: 1 / -1; margin-bottom: 20px;">
+            <section class="card" style="margin-bottom: 0;">
+                <div class="card-header">
+                    <span><i class="bi bi-stoplights"></i> Semáforo de Avance del Proyecto (Demo)</span>
+                </div>
+                <div class="card-body">
+                    <div id="project-semaphore"
+                        style="display: flex; justify-content: space-between; align-items: center; padding: 20px; flex-wrap: wrap; gap: 15px;">
+                        <!-- El semáforo se llenará vía JS -->
+                        <div style="text-align: center; color: #666; width: 100%;"><i class="bi bi-hourglass-split"></i>
+                            Cargando estado...</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
         <!-- Sidebar: Info -->
         <aside class="detail-sidebar">
             <div class="card">
