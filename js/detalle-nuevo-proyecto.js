@@ -198,17 +198,23 @@ function renderGeneralInfo(feature) {
     document.getElementById('plant-type').textContent = projectType;
     document.getElementById('coordinates-tag').textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
 
-    const infoFields = [
-        { label: 'Promovente', value: properties['Promovente'] },
-        { label: 'Estatus del Trámite', value: properties['Estatus del trámite'] },
-        { label: 'Tipo de Proyecto', value: projectType },
-        { label: 'Entidad Federativa', value: properties['Entidad Federativa'] },
-        { label: 'Capacidad MW', value: formatNumber(properties['Capacidad a instalar (MW)'], 'MW') },
-        { label: 'Tensión (kV)', value: properties['Tensión ( kV)'] ? `${properties['Tensión ( kV)']} kV` : 'N/D' },
-        { label: 'Inicio de Obras', value: properties['Fecha estimada de inicio de obras'] },
-        { label: 'Operación Comercial', value: properties['Fecha estimada de operación comercial'] },
-        { label: 'Resolución SENER', value: properties['Fecha de emisión de resolución por parte de SENER'] }
-    ];
+    const excludedKeys = ['Latitud', 'Longitud', 'Nombre del proyecto', 'Nombre de la obra'];
+    let infoFields = [];
+
+    // Cargar dinámicamente todos los campos disponibles en las propiedades (Google Sheets u otros)
+    Object.keys(properties).forEach(key => {
+        if (!excludedKeys.includes(key) && properties[key] !== undefined && properties[key] !== null && properties[key] !== '') {
+            let val = properties[key];
+            if ((key.toLowerCase().includes('capacidad') || key.toLowerCase().includes('mw')) && !isNaN(val)) {
+                val = formatNumber(val, 'MW');
+            }
+            infoFields.push({ label: key, value: val });
+        }
+    });
+
+    if (infoFields.length === 0) {
+        infoFields.push({ label: 'Información', value: 'No hay datos detallados disponibles.' });
+    }
 
     const infoList = document.getElementById('info-list');
     infoList.innerHTML = infoFields.map((item) => `
