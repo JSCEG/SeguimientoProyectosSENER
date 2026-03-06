@@ -285,7 +285,7 @@ class MobileInterface {
                         <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-top: 0.75rem; text-align: left;">
                             <p style="margin: 0; font-size: 0.85rem; color: #666;">
                                 <strong>Fuente de datos:</strong><br>
-                                Google Sheets institucional (BBDD.GEN y BBDD.TRA) · GeoJSON CDN sassoapps.com
+                                Google Sheets institucional (BBDD.GEN y BBDD.TRA) · Capas GeoJSON institucionales
                             </p>
                         </div>
                         <div id="mobile-last-updated" style="margin-top: 1rem; padding: 0.75rem; background: #e8f5e9; border-radius: 8px;">
@@ -947,8 +947,18 @@ class MobileInterface {
                 break;
             }
             case 'refresh': {
-                // Recargar datos del Google Sheets (capa nuevos_proyectos)
+                // Recargar proyectos de Google Sheets
                 this._reloadNuevosProyectos();
+                // Recargar capas CDN (Centrales, Líneas, Subestaciones, Gerencias) + tiles basemap
+                if (typeof window.reloadDomainLayers === 'function') {
+                    window.reloadDomainLayers().then(() => {
+                        if (typeof showNotification === 'function') {
+                            showNotification('Datos actualizados', 'Capas y proyectos recargados correctamente.', 'success');
+                        }
+                    }).catch(err => {
+                        console.error('Error en reloadDomainLayers:', err);
+                    });
+                }
                 break;
             }
             case 'export-png': {

@@ -168,9 +168,14 @@ function renderGeneracionCard(item) {
                 </div>
                 <span class="text-xs text-slate-600 dark:text-slate-400 font-semibold whitespace-nowrap overflow-hidden text-ellipsis">${emp}</span>
             </div>
-            <button onclick="event.stopPropagation(); openCrudModal('update', '${item._rowNumber}')" class="p-2 hover:bg-primary/5 rounded-lg transition-colors text-primary/60 hover:text-primary z-10 shrink-0">
-                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">edit_note</span>
-            </button>
+            <div class="flex items-center gap-1 shrink-0">
+                <button onclick="event.stopPropagation(); window.open('detalle-nuevo-proyecto?permiso=${encodeURIComponent(name)}', '_blank')" title="Ver Detalle" class="p-2 hover:bg-amber-50 rounded-lg transition-colors text-amber-500 hover:text-amber-600 z-10">
+                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">open_in_new</span>
+                </button>
+                <button onclick="event.stopPropagation(); openCrudModal('update', '${item._rowNumber}')" title="Editar" class="p-2 hover:bg-primary/5 rounded-lg transition-colors text-primary/60 hover:text-primary z-10">
+                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">edit_note</span>
+                </button>
+            </div>
         </div>
     </div>
     `;
@@ -202,8 +207,11 @@ function renderTransmisionCard(item) {
             <span class="whitespace-nowrap overflow-hidden text-ellipsis">${sub1} ➝ ${sub2}</span>
         </div>
 
-        <div class="flex items-center justify-end mt-2">
-            <button onclick="event.stopPropagation(); openCrudModal('update', '${item._rowNumber}')" class="p-2 hover:bg-primary/5 rounded-lg transition-colors text-primary/60 hover:text-primary z-10">
+        <div class="flex items-center justify-end mt-2 gap-1">
+            <button onclick="event.stopPropagation(); window.open('detalle-nuevo-proyecto?permiso=${encodeURIComponent(name)}', '_blank')" title="Ver Detalle" class="p-2 hover:bg-amber-50 rounded-lg transition-colors text-amber-500 hover:text-amber-600 z-10">
+                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">open_in_new</span>
+            </button>
+            <button onclick="event.stopPropagation(); openCrudModal('update', '${item._rowNumber}')" title="Editar" class="p-2 hover:bg-primary/5 rounded-lg transition-colors text-primary/60 hover:text-primary z-10">
                 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">edit_note</span>
             </button>
         </div>
