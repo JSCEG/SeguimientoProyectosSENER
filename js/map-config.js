@@ -1181,6 +1181,69 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // Función global para recargar capas esenciales CDN + basemaps (llamada desde mobile-interface.js)
+    window.reloadDomainLayers = async function () {
+        const mapConfig = window.SEGUIMIENTO_PROYECTOS_MAPS && window.SEGUIMIENTO_PROYECTOS_MAPS[0];
+        if (!mapConfig || !mapConfig.additionalLayers) return;
+
+        // Solo capas de dominio con URL CDN (no analysis lazy, no customLoader de Sheets)
+        const domainLayers = mapConfig.additionalLayers.filter(al => {
+            const isAnalysis = al.category === 'analysis' || ['ramsar', 'anp', 'advc', 'usumacinta'].includes(al.type);
+            return !isAnalysis && al.type !== 'nuevos_proyectos' && al.url;
+        });
+
+        // Remover instancias actuales del mapa y control
+        for (const al of domainLayers) {
+            const name = al.name || al.type;
+            const existing = activeAdditionalLayers.find(e => e.name === name);
+            if (existing) {
+                try {
+                    if (layerControl) layerControl.removeLayer(existing.layer);
+                    if (map.hasLayer(existing.layer)) map.removeLayer(existing.layer);
+                } catch (e) { /* ignore */ }
+                activeAdditionalLayers = activeAdditionalLayers.filter(e => e !== existing);
+            }
+        }
+
+        // Re-cargar y re-agregar cada capa CDN
+        for (const al of domainLayers) {
+            const name = al.name || al.type;
+            const layerOptions = { type: al.type, silent: true, clearLayers: false };
+            if (al.style) {
+                layerOptions.style = al.style;
+                if (al.style.radius) {
+                    layerOptions.pointToLayer = (feat, latlng) => L.circleMarker(latlng, al.style);
+                }
+            }
+            if (al.popup) {
+                layerOptions.onEachFeature = (feat, layer) => {
+                    const content = typeof al.popup === 'function' ? al.popup(feat.properties) : al.popup;
+                    if (content) layer.bindPopup(content);
+                };
+            }
+            try {
+                // Usar loadGeoJSON (mismo closure) para replicar lógica de iconos y estilos
+                // Añadir timestamp para forzar bypass de caché del browser
+                const freshUrl = al.url + (al.url.includes('?') ? '&' : '?') + '_r=' + Date.now();
+                const newLayer = await loadGeoJSON(freshUrl, layerOptions);
+                if (newLayer) {
+                    // Remover de instrumentLayerGroup (como hace el código de carga inicial)
+                    if (instrumentLayerGroup && instrumentLayerGroup.hasLayer(newLayer)) {
+                        instrumentLayerGroup.removeLayer(newLayer);
+                    }
+                    if (layerControl) layerControl.addOverlay(newLayer, name);
+                    activeAdditionalLayers.push({ layer: newLayer, name });
+                    if (!map.hasLayer(newLayer)) map.addLayer(newLayer);
+                }
+            } catch (err) {
+                console.error('Error recargando capa CDN:', al.type, err);
+            }
+        }
+
+        // Forzar redibujado de tiles de basemap
+        map.eachLayer(l => { if (l instanceof L.TileLayer) { try { l.redraw(); } catch (e) { /* ignore */ } } });
+    };
+
     // Asegurar que las regiones marinas estén deshabilitadas al inicio
     if (map.hasLayer(marinasLayer)) {
         map.removeLayer(marinasLayer);
@@ -3257,7 +3320,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             const id = p.NumeroPermiso || p.Razón_social;
                             console.log('🔗 Generando enlace para central:', id);
                             const btnHtml = `<div style="text-align: center; margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee;">
-                                <a href="detalle-central.html?permiso=${encodeURIComponent(id)}" target="_blank" style="display: inline-block; padding: 8px 16px; background-color: #FF8F00; color: white; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 13px; text-shadow: none !important; -webkit-text-stroke: 0 !important; filter: none !important; letter-spacing: normal !important;">Ver Detalle Completo</a>
+                                <a href="detalle-central?permiso=${encodeURIComponent(id)}" target="_blank" style="display: inline-block; padding: 8px 16px; background-color: #FF8F00; color: white; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 13px; text-shadow: none !important; -webkit-text-stroke: 0 !important; filter: none !important; letter-spacing: normal !important;">Ver Detalle Completo</a>
                             </div>`;
 
                             const newContent = content + btnHtml;
@@ -3486,7 +3549,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                         const id = p.NumeroPermiso || p.Razón_social;
                         const btnHtml = `<div style="text-align: center; margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee;">
-                            <a href="detalle-central.html?permiso=${encodeURIComponent(id)}" target="_blank" style="display: inline-block; padding: 8px 16px; background-color: #FF8F00; color: white; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 13px; text-shadow: none !important; -webkit-text-stroke: 0 !important; filter: none !important; letter-spacing: normal !important;">Ver Detalle Completo</a>
+                            <a href="detalle-central?permiso=${encodeURIComponent(id)}" target="_blank" style="display: inline-block; padding: 8px 16px; background-color: #FF8F00; color: white; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 13px; text-shadow: none !important; -webkit-text-stroke: 0 !important; filter: none !important; letter-spacing: normal !important;">Ver Detalle Completo</a>
                         </div>`;
 
                         layer.bindPopup(content + btnHtml);
@@ -10213,10 +10276,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
                                             // Fallback para Centrales Eléctricas si el popup viene sin botón (por caché o error)
                                             const isStringContent = typeof content === 'string';
-                                            if (additionalLayer.type === 'centrales' && isStringContent && content && !content.includes('detalle-central.html')) {
+                                            if (additionalLayer.type === 'centrales' && isStringContent && content && !content.includes('detalle-central')) {
                                                 const id = feature.properties.NumeroPermiso || feature.properties.Razón_social;
                                                 const btnHtml = `<div style="text-align: center; margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee;">
-                                                    <a href="detalle-central.html?permiso=${encodeURIComponent(id)}" target="_blank" style="display: inline-block; padding: 8px 16px; background-color: #FF8F00; color: white; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 13px; text-shadow: none !important; -webkit-text-stroke: 0 !important; filter: none !important; letter-spacing: normal !important;">Ver Detalle Completo (Fallback)</a>
+                                                    <a href="detalle-central?permiso=${encodeURIComponent(id)}" target="_blank" style="display: inline-block; padding: 8px 16px; background-color: #FF8F00; color: white; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 13px; text-shadow: none !important; -webkit-text-stroke: 0 !important; filter: none !important; letter-spacing: normal !important;">Ver Detalle Completo (Fallback)</a>
                                                 </div>`;
                                                 content = content + btnHtml;
                                                 console.warn('⚠️ Usando fallback de botón para centrales');

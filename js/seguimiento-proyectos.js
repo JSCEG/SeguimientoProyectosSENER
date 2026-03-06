@@ -102,7 +102,7 @@ const SEGUIMIENTO_PROYECTOS_MAPS = [
                     console.log('🔗 [SeguimientoProyectos] Generando enlace para central:', id); // Debug Log
                     const btnHtml = `
                         <div style="margin-top: 12px; text-align: center; border-top: 1px solid #eee; padding-top: 8px;">
-                            <button onclick="window.open('detalle-central.html?permiso=${encodeURIComponent(id)}', '_blank')"
+                            <button onclick="window.open('detalle-central?permiso=${encodeURIComponent(id)}', '_blank')"
                                style="display: inline-flex; align-items: center; gap: 6px; border: none; padding: 8px 16px; background-color: #FF8F00; color: white; text-decoration: none; border-radius: 20px; font-size: 13px; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer;">
                                 <i class="bi bi-eye-fill"></i> Ver Detalle Completo
                             </button>
@@ -285,7 +285,7 @@ const SEGUIMIENTO_PROYECTOS_MAPS = [
                         clusterPane: 'electricityMarkersPane',
                         iconCreateFunction: function (cluster) {
                             return L.divIcon({
-                                html: `<div style="background-color: #9B2247; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);">${cluster.getChildCount()}</div>`,
+                                html: `<div style="background-color: #0D47A1; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);">${cluster.getChildCount()}</div>`,
                                 className: 'custom-cluster-icon',
                                 iconSize: L.point(30, 30)
                             });
@@ -324,7 +324,7 @@ const SEGUIMIENTO_PROYECTOS_MAPS = [
                                         const uniqueIdGen = obj['Nombre del proyecto'] || obj['Nombre de la obra'] || '';
                                         const btnHtmlGen = uniqueIdGen ? `
                                             <div style="margin-top: 12px; text-align: center; border-top: 1px solid #eee; padding-top: 8px;">
-                                                <button onclick="window.open('detalle-nuevo-proyecto.html?permiso=${encodeURIComponent(uniqueIdGen)}', '_blank')"
+                                                <button onclick="window.open('detalle-nuevo-proyecto?permiso=${encodeURIComponent(uniqueIdGen)}', '_blank')"
                                                    style="display: inline-flex; align-items: center; gap: 6px; border: none; padding: 8px 16px; background-color: #FF8F00; color: white; text-decoration: none; border-radius: 20px; font-size: 13px; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer;">
                                                     <i class="bi bi-eye-fill"></i> Ver Detalle Completo
                                                 </button>
@@ -378,7 +378,7 @@ const SEGUIMIENTO_PROYECTOS_MAPS = [
                                         const uniqueIdTx = obj['Nombre del proyecto'] || obj['Nombre de la obra'] || '';
                                         const btnHtmlTx = uniqueIdTx ? `
                                             <div style="margin-top: 12px; text-align: center; border-top: 1px solid #eee; padding-top: 8px;">
-                                                <button onclick="window.open('detalle-nuevo-proyecto.html?permiso=${encodeURIComponent(uniqueIdTx)}', '_blank')"
+                                                <button onclick="window.open('detalle-nuevo-proyecto?permiso=${encodeURIComponent(uniqueIdTx)}', '_blank')"
                                                    style="display: inline-flex; align-items: center; gap: 6px; border: none; padding: 8px 16px; background-color: #FF8F00; color: white; text-decoration: none; border-radius: 20px; font-size: 13px; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer;">
                                                     <i class="bi bi-eye-fill"></i> Ver Detalle Completo
                                                 </button>

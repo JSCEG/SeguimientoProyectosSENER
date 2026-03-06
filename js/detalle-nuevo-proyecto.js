@@ -54,7 +54,6 @@ async function initializeDetailView() {
     const permisoId = urlParams.get('permiso');
 
     if (!permisoId) {
-        alert('No se especificó ningún nuevo proyecto.');
         window.location.href = 'index.html';
         return;
     }
