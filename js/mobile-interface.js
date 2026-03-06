@@ -89,9 +89,9 @@ class MobileInterface {
         const menu = document.createElement('div');
         menu.className = 'mobile-floating-menu';
         menu.innerHTML = `
-            <button class="mobile-floating-menu-item" data-tab="controls">
-                <i class="bi bi-sliders"></i>
-                <span>Controles</span>
+            <button class="mobile-floating-menu-item" data-action="tablero">
+                <i class="bi bi-layout-sidebar-reverse"></i>
+                <span>Tablero</span>
             </button>
             <button class="mobile-floating-menu-item" data-tab="layers">
                 <i class="bi bi-layers"></i>
@@ -119,17 +119,12 @@ class MobileInterface {
                 <span>Exportar PNG</span>
             </button>
             <div style="height: 1px; background: #eee; margin: 0.5rem 0;"></div>
-            <button class="mobile-floating-menu-item" data-action="edit-data">
-                <i class="bi bi-pencil-square"></i>
-                <span>Editar datos</span>
+            <button class="mobile-floating-menu-item" data-tab="proyectos">
+                <i class="bi bi-bar-chart-fill"></i>
+                <span>Estadísticas</span>
             </button>
-            <button class="mobile-floating-menu-item" data-action="view-data">
-                <i class="bi bi-table"></i>
-                <span>Ver datos</span>
-            </button>
-            <div style="height: 1px; background: #eee; margin: 0.5rem 0;"></div>
             <button class="mobile-floating-menu-item" data-tab="about">
-                <i class="bi bi-book"></i>
+                <i class="bi bi-info-square"></i>
                 <span>Acerca de</span>
             </button>
         `;
@@ -229,31 +224,25 @@ class MobileInterface {
                 </div>
             </div>
             <div class="bottom-sheet-tabs">
-                <button class="bottom-sheet-tab active" data-tab="controls">Controles</button>
+                <button class="bottom-sheet-tab active" data-tab="proyectos">Proyectos</button>
                 <button class="bottom-sheet-tab" data-tab="layers">Capas</button>
                 <button class="bottom-sheet-tab" data-tab="info">Información</button>
                 <button class="bottom-sheet-tab" data-tab="about">Acerca de</button>
             </div>
             <div class="bottom-sheet-content">
-                <!-- Tab: Controles -->
-                <div class="bottom-sheet-tab-content" data-content="controls">
-                    <div class="bottom-sheet-controls">
-                        <div class="bottom-sheet-control-group">
-                            <label for="mobile-instrument-select">Instrumento</label>
-                            <select id="mobile-instrument-select" class="control">
-                                <option value="PRESAS">PRESAS</option>
-                            </select>
+                <!-- Tab: Proyectos -->
+                <div class="bottom-sheet-tab-content" data-content="proyectos">
+                    <div id="mobile-proyectos-stats" style="padding: 1rem;">
+                        <div style="text-align: center; color: #999; padding: 2rem 1rem;">
+                            <i class="bi bi-hourglass-split" style="font-size: 2rem; display: block; margin-bottom: 0.5rem;"></i>
+                            <span style="font-size: 0.9rem;">Cargando estadísticas...</span>
                         </div>
-                        <div class="bottom-sheet-control-group">
-                            <label for="mobile-map-select">Mapa</label>
-                            <select id="mobile-map-select" class="control" disabled>
-                                <option value="">Seleccione un mapa</option>
-                            </select>
-                        </div>
-                        <div class="bottom-sheet-control-group" id="mobile-search-group" style="display: none;">
-                            <label for="mobile-permit-search">Buscar Presa</label>
-                            <input type="text" id="mobile-permit-search" class="control" placeholder="ID de presa (1-5) o nombre">
-                        </div>
+                    </div>
+                    <div style="padding: 0 1rem 1.25rem;">
+                        <button onclick="document.getElementById('sidebar-toggle-btn')?.click(); window.mobileInterface?.collapseBottomSheet();"
+                                style="width: 100%; padding: 0.75rem; background: var(--color-gobmx-guinda); color: white; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                            <i class="bi bi-layout-sidebar-reverse"></i> Ver Tablero de Proyectos
+                        </button>
                     </div>
                 </div>
                 
@@ -285,12 +274,18 @@ class MobileInterface {
                             <img src="img/logo_sener.png" alt="SENER" style="height: 60px;">
                             <img src="img/snien.png" alt="SNIEn" style="height: 50px;">
                         </div>
-                        <h3 style="margin: 0 0 0.5rem 0; color: var(--color-gobmx-verde); font-size: 1.1rem;">Mapas Dinámicos de Presas</h3>
-                        <p style="margin: 0 0 1rem 0; color: #666; font-size: 0.9rem;">Subsecretaría de Planeación y Transición Energética</p>
-                        <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                        <h3 style="margin: 0 0 0.5rem 0; color: var(--color-gobmx-verde); font-size: 1.1rem;">Seguimiento de Nuevos Proyectos de Energía</h3>
+                        <p style="margin: 0 0 1rem 0; color: #666; font-size: 0.9rem;">Subsecretaría de Planeación y Transición Energética · SNIEn</p>
+                        <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-top: 1rem; text-align: left;">
+                            <p style="margin: 0 0 0.5rem 0; font-size: 0.85rem; color: #666;">
+                                <strong>Capas disponibles:</strong><br>
+                                Centrales Eléctricas · Gerencias de Control · Líneas de Transmisión · Subestaciones · ANP · Ramsar · ADVC
+                            </p>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-top: 0.75rem; text-align: left;">
                             <p style="margin: 0; font-size: 0.85rem; color: #666;">
                                 <strong>Fuente de datos:</strong><br>
-                                Hoja de cálculo institucional publicada (Google Sheets)
+                                Google Sheets institucional (BBDD.GEN y BBDD.TRA) · GeoJSON CDN sassoapps.com
                             </p>
                         </div>
                         <div id="mobile-last-updated" style="margin-top: 1rem; padding: 0.75rem; background: #e8f5e9; border-radius: 8px;">
@@ -306,8 +301,8 @@ class MobileInterface {
         document.body.appendChild(sheet);
         this.bottomSheet = sheet;
 
-        // Sincronizar con los selectores principales
-        this.syncBottomSheetControls();
+        // Cargar estadísticas del tab Proyectos
+        this.loadProyectosStats();
 
         // Sincronizar información del mapa
         this.syncMapInfo();
@@ -387,80 +382,146 @@ class MobileInterface {
         });
     }
 
-    syncBottomSheetControls() {
-        const mainInstrumentSelect = document.getElementById('instrument-select');
-        const mainMapSelect = document.getElementById('map-select');
-        const mobileInstrumentSelect = document.getElementById('mobile-instrument-select');
-        const mobileMapSelect = document.getElementById('mobile-map-select');
+    loadProyectosStats() {
+        const statsContainer = document.getElementById('mobile-proyectos-stats');
+        if (!statsContainer) return;
 
-        if (!mainInstrumentSelect || !mobileInstrumentSelect) return;
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbw3heMgQJWmvUW3prcamUEQn07sldIBGZTH5WVG8Pu2t-a0mwdmfSyD27jR4fj9Ws-0yg/exec';
 
-        // Sincronizar instrumento
-        mobileInstrumentSelect.addEventListener('change', (e) => {
-            mainInstrumentSelect.value = e.target.value;
-            mainInstrumentSelect.dispatchEvent(new Event('change'));
-        });
+        fetch(GAS_URL)
+            .then(r => r.json())
+            .then(result => {
+                if (result.status !== 'success' || !result.data) throw new Error('API error');
 
-        mainInstrumentSelect.addEventListener('change', (e) => {
-            mobileInstrumentSelect.value = e.target.value;
-        });
+                const parseSheet = (rawData) => {
+                    if (!rawData || rawData.length < 2) return [];
+                    const headerMapping = rawData[0];
+                    return rawData.slice(1).map(row => {
+                        let obj = {};
+                        for (let key in row) {
+                            if (key.startsWith('Columna_') && headerMapping[key]) {
+                                obj[headerMapping[key].toString().trim()] = row[key] || '';
+                            }
+                        }
+                        return obj;
+                    });
+                };
 
-        // Sincronizar mapa
-        if (mainMapSelect && mobileMapSelect) {
-            mobileMapSelect.addEventListener('change', (e) => {
-                mainMapSelect.value = e.target.value;
-                mainMapSelect.dispatchEvent(new Event('change'));
+                const genData = parseSheet(result.data['BBDD.GEN']);
+                const traData = parseSheet(result.data['BBDD.TRA']);
+
+                const countByStatus = (data) => {
+                    const counts = {};
+                    data.forEach(item => {
+                        const s = (item['Etapa del proyecto'] || item['Estado'] || 'Sin estado').trim();
+                        counts[s] = (counts[s] || 0) + 1;
+                    });
+                    return counts;
+                };
+
+                const renderStats = (stats, color) => {
+                    const entries = Object.entries(stats).sort((a, b) => b[1] - a[1]);
+                    if (entries.length === 0) return '<p style="color:#999; font-size:0.85rem;">Sin datos</p>';
+                    return entries.map(([label, count]) => `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.45rem 0; border-bottom: 1px solid #f0f0f0;">
+                            <span style="font-size: 0.8rem; color: #555; flex: 1; padding-right: 0.5rem;">${label}</span>
+                            <span style="font-size: 0.82rem; font-weight: 700; color: ${color}; background: ${color}18; padding: 0.15rem 0.55rem; border-radius: 12px; white-space: nowrap;">${count}</span>
+                        </div>
+                    `).join('');
+                };
+
+                statsContainer.innerHTML = `
+                    <div style="display: flex; gap: 0.75rem; margin-bottom: 1.25rem;">
+                        <div style="flex: 1; background: #0D47A112; border: 2px solid #0D47A1; border-radius: 10px; padding: 0.85rem; text-align: center;">
+                            <div style="font-size: 2rem; font-weight: 800; color: #0D47A1; line-height: 1;">${genData.length}</div>
+                            <div style="font-size: 0.7rem; color: #0D47A1; font-weight: 700; margin-top: 0.3rem; text-transform: uppercase; letter-spacing: 0.05em;">Generación</div>
+                        </div>
+                        <div style="flex: 1; background: #7B1FA212; border: 2px solid #7B1FA2; border-radius: 10px; padding: 0.85rem; text-align: center;">
+                            <div style="font-size: 2rem; font-weight: 800; color: #7B1FA2; line-height: 1;">${traData.length}</div>
+                            <div style="font-size: 0.7rem; color: #7B1FA2; font-weight: 700; margin-top: 0.3rem; text-transform: uppercase; letter-spacing: 0.05em;">Transmisión</div>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <div style="font-size: 0.75rem; font-weight: 700; color: #0D47A1; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.06em; display: flex; align-items: center; gap: 0.35rem;">
+                            <i class="bi bi-lightning-fill"></i> Generación por etapa
+                        </div>
+                        ${renderStats(countByStatus(genData), '#0D47A1')}
+                    </div>
+                    <div>
+                        <div style="font-size: 0.75rem; font-weight: 700; color: #7B1FA2; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.06em; display: flex; align-items: center; gap: 0.35rem;">
+                            <i class="bi bi-bezier2"></i> Transmisión por etapa
+                        </div>
+                        ${renderStats(countByStatus(traData), '#7B1FA2')}
+                    </div>
+                `;
+            })
+            .catch(() => {
+                statsContainer.innerHTML = `
+                    <div style="text-align: center; color: #999; padding: 2rem 1rem;">
+                        <i class="bi bi-wifi-off" style="font-size: 2rem; display: block; margin-bottom: 0.5rem;"></i>
+                        <span style="font-size: 0.9rem;">No se pudieron cargar las estadísticas</span>
+                    </div>
+                `;
             });
-
-            mainMapSelect.addEventListener('change', (e) => {
-                mobileMapSelect.value = e.target.value;
-                mobileMapSelect.innerHTML = mainMapSelect.innerHTML;
-                mobileMapSelect.disabled = mainMapSelect.disabled;
-            });
-        }
-
-
-        // Sincronizar búsqueda y manejar búsqueda por ID
-        const mainSearchInput = document.getElementById('permit-search');
-        const mobileSearchInput = document.getElementById('mobile-permit-search');
-
-        if (mainSearchInput && mobileSearchInput) {
-            mobileSearchInput.addEventListener('input', (e) => {
-                const val = e.target.value;
-
-                // Verificar si es un número del 1 al 5
-                if (/^[1-5]$/.test(val)) {
-                    // Búsqueda por ID de presa
-                    this.searchPresaById(parseInt(val));
-                } else {
-                    // Búsqueda normal (sincronizar con desktop)
-                    mainSearchInput.value = val;
-                    mainSearchInput.dispatchEvent(new Event('input'));
-                }
-            });
-        }
     }
 
-    searchPresaById(id) {
-        // Mapeo de IDs a nombres o coordenadas de presas
-        // Asumiendo que window.presasDataLayers contiene las capas cargadas
+    _reloadNuevosProyectos() {
+        const map = window.map;
+        if (!map) return;
+
+        // Eliminar cluster existente del mapa
+        if (map._nuevosProyectosCluster) {
+            map.removeLayer(map._nuevosProyectosCluster);
+            map._nuevosProyectosCluster = null;
+        }
+
+        // Relanzar el customLoader de la capa nuevos_proyectos
+        const mapConfig = window.SEGUIMIENTO_PROYECTOS_MAPS && window.SEGUIMIENTO_PROYECTOS_MAPS[0];
+        if (!mapConfig) { console.warn('SEGUIMIENTO_PROYECTOS_MAPS no disponible'); return; }
+
+        const layerDef = mapConfig.additionalLayers && mapConfig.additionalLayers.find(l => l.type === 'nuevos_proyectos');
+        if (!layerDef || !layerDef.customLoader) { console.warn('customLoader no encontrado'); return; }
+
+        layerDef.customLoader({}).then(clusterGroup => {
+            if (clusterGroup) {
+                map.addLayer(clusterGroup);
+                map._nuevosProyectosCluster = clusterGroup;
+            }
+            // Recargar también las estadísticas del tab
+            this.loadProyectosStats();
+        }).catch(err => {
+            console.error('Error recargando capa de nuevos proyectos:', err);
+        });
+    }
+
+    searchProyecto(term) {
+        // Reenviar búsqueda al tablero sidebar via postMessage
+        const iframe = document.getElementById('proyectos-sidebar-iframe');
+        if (iframe && iframe.contentWindow) {
+            iframe.contentWindow.postMessage({ action: 'focusSearch', term: term || '' }, '*');
+        }
+        // Mostrar tablero si está oculto
+        const toggleBtn = document.getElementById('sidebar-toggle-btn');
+        const iframeEl = document.getElementById('proyectos-sidebar-iframe');
+        if (iframeEl && iframeEl.classList.contains('hidden-sidebar') && toggleBtn) {
+            toggleBtn.click();
+        }
+        this.collapseBottomSheet();
+    }
+
+    _legacySearchPresaById(id) {
+        // Método legado - ya no se usa en este proyecto
         if (window.presasDataLayers) {
             let found = false;
             window.presasDataLayers.eachLayer(layer => {
                 if (found) return;
                 if (layer.feature && layer.feature.properties) {
                     const props = layer.feature.properties;
-                    // Comparar con id o no (número), usando == para permitir coincidencia string/number
                     if (props.id == id || props.no == id || props.NO == id) {
-                        // Centrar mapa y abrir popup/análisis
                         window.map.setView(layer.getLatLng(), 14);
                         layer.fire('click');
                         found = true;
-
-                        // Cerrar teclado
                         document.activeElement.blur();
-
-                        // Colapsar bottom sheet parcialmente para ver el mapa
                         this.collapseBottomSheet();
                     }
                 }
@@ -874,46 +935,30 @@ class MobileInterface {
 
     handleMenuAction(action) {
         switch (action) {
-            case 'search':
-                // Abrir tab de controles
-                this.switchBottomSheetTab('controls');
-                this.expandBottomSheet();
-
-                // Asegurar que el contenedor de búsqueda sea visible
-                const searchGroup = document.getElementById('mobile-search-group');
-                if (searchGroup) {
-                    searchGroup.style.display = 'block';
-                }
-
-                // Enfocar input de búsqueda existente
-                setTimeout(() => {
-                    const searchInput = document.getElementById('mobile-permit-search');
-                    if (searchInput) {
-                        searchInput.focus();
-                        // Asegurar que el input sea visible (scroll si es necesario)
-                        searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                }, 300);
+            case 'tablero': {
+                // Toggle sidebar iframe de proyectos
+                const toggleBtn = document.getElementById('sidebar-toggle-btn');
+                if (toggleBtn) toggleBtn.click();
                 break;
-            case 'refresh':
-                const refreshBtn = document.getElementById('refresh-data');
-                if (refreshBtn) refreshBtn.click();
+            }
+            case 'search': {
+                // Mostrar tablero y enfocar su buscador
+                this.searchProyecto('');
                 break;
-            case 'export-png':
+            }
+            case 'refresh': {
+                // Recargar datos del Google Sheets (capa nuevos_proyectos)
+                this._reloadNuevosProyectos();
+                break;
+            }
+            case 'export-png': {
                 this.exportMap();
                 break;
-            case 'export-word':
-                this.exportMap(); // Por ahora usa la misma función
+            }
+            case 'export-word': {
+                document.getElementById('export-word-btn')?.click();
                 break;
-            case 'edit-data':
-            case 'view-data':
-                const url = window.currentSheetUrl || (window.mapConfig && window.mapConfig.googleSheetUrl);
-                if (url) {
-                    window.open(url, '_blank');
-                } else {
-                    alert('No hay datos vinculados para este mapa.');
-                }
-                break;
+            }
         }
     }
 
