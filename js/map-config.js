@@ -3320,7 +3320,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             const id = p.NumeroPermiso || p.Razón_social;
                             console.log('🔗 Generando enlace para central:', id);
                             const btnHtml = `<div style="text-align: center; margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee;">
-                                <a href="detalle-central?permiso=${encodeURIComponent(id)}" target="_blank" style="display: inline-block; padding: 8px 16px; background-color: #FF8F00; color: white; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 13px; text-shadow: none !important; -webkit-text-stroke: 0 !important; filter: none !important; letter-spacing: normal !important;">Ver Detalle Completo</a>
+                                <a href="detalle-central.html?permiso=${encodeURIComponent(id)}" target="_blank" style="display: inline-block; padding: 8px 16px; background-color: #FF8F00; color: white; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 13px; text-shadow: none !important; -webkit-text-stroke: 0 !important; filter: none !important; letter-spacing: normal !important;">Ver Detalle Completo</a>
                             </div>`;
 
                             const newContent = content + btnHtml;
@@ -3549,7 +3549,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                         const id = p.NumeroPermiso || p.Razón_social;
                         const btnHtml = `<div style="text-align: center; margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee;">
-                            <a href="detalle-central?permiso=${encodeURIComponent(id)}" target="_blank" style="display: inline-block; padding: 8px 16px; background-color: #FF8F00; color: white; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 13px; text-shadow: none !important; -webkit-text-stroke: 0 !important; filter: none !important; letter-spacing: normal !important;">Ver Detalle Completo</a>
+                            <a href="detalle-central.html?permiso=${encodeURIComponent(id)}" target="_blank" style="display: inline-block; padding: 8px 16px; background-color: #FF8F00; color: white; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 13px; text-shadow: none !important; -webkit-text-stroke: 0 !important; filter: none !important; letter-spacing: normal !important;">Ver Detalle Completo</a>
                         </div>`;
 
                         layer.bindPopup(content + btnHtml);
@@ -10279,7 +10279,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                             if (additionalLayer.type === 'centrales' && isStringContent && content && !content.includes('detalle-central')) {
                                                 const id = feature.properties.NumeroPermiso || feature.properties.Razón_social;
                                                 const btnHtml = `<div style="text-align: center; margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee;">
-                                                    <a href="detalle-central?permiso=${encodeURIComponent(id)}" target="_blank" style="display: inline-block; padding: 8px 16px; background-color: #FF8F00; color: white; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 13px; text-shadow: none !important; -webkit-text-stroke: 0 !important; filter: none !important; letter-spacing: normal !important;">Ver Detalle Completo (Fallback)</a>
+                                                    <a href="detalle-central.html?permiso=${encodeURIComponent(id)}" target="_blank" style="display: inline-block; padding: 8px 16px; background-color: #FF8F00; color: white; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 13px; text-shadow: none !important; -webkit-text-stroke: 0 !important; filter: none !important; letter-spacing: normal !important;">Ver Detalle Completo (Fallback)</a>
                                                 </div>`;
                                                 content = content + btnHtml;
                                                 console.warn('⚠️ Usando fallback de botón para centrales');
@@ -11109,4 +11109,46 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+
+    // ==========================================
+    // MOBILE LEGEND TOGGLE (MutationObserver)
+    // ==========================================
+    const legendObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            mutation.addedNodes.forEach((node) => {
+                if (node.nodeType === 1 && node.classList && node.classList.contains('legend') && node.classList.contains('info')) {
+                    // Evitar procesar dos veces
+                    if (node.querySelector('.legend-toggle')) return;
+
+                    const originalContent = node.innerHTML;
+                    node.innerHTML = '';
+
+                    // Crear botón de toggle
+                    const toggleBtn = document.createElement('button');
+                    toggleBtn.className = 'legend-toggle';
+                    toggleBtn.innerHTML = 'Simbología <i class="bi bi-chevron-down"></i>';
+                    toggleBtn.onclick = function (e) {
+                        e.stopPropagation();
+                        node.classList.toggle('collapsed');
+                    };
+
+                    // Crear contenedor para el contenido
+                    const contentDiv = document.createElement('div');
+                    contentDiv.className = 'legend-content';
+                    contentDiv.innerHTML = originalContent;
+
+                    node.appendChild(toggleBtn);
+                    node.appendChild(contentDiv);
+
+                    // Iniciar colapsado en móviles
+                    if (window.innerWidth <= 768) {
+                        node.classList.add('collapsed');
+                    }
+                }
+            });
+        });
+    });
+
+    const legendMapContainer = document.getElementById('map') || document.body;
+    legendObserver.observe(legendMapContainer, { childList: true, subtree: true });
 });

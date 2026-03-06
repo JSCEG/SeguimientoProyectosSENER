@@ -408,7 +408,6 @@ button {
 }
 
 .btn-secondary:hover {
-    transform: translateY(-1px);
     background: #165845;
     box-shadow: 0 4px 12px rgba(30, 91, 79, 0.3);
 }
@@ -434,7 +433,6 @@ button {
 .card-toolbar .btn-icon:hover {
     background: var(--color-gobmx-guinda);
     color: white;
-    transform: translateY(-1px);
     box-shadow: 0 4px 10px rgba(155, 34, 71, 0.3);
 }
 
@@ -454,7 +452,6 @@ button {
 #export-map-btn:hover,
 #export-word-btn:hover {
     background: var(--color-verde-claro);
-    transform: translateY(-1px);
     box-shadow: 0 4px 10px rgba(155, 34, 71, 0.2);
 }
 
@@ -875,9 +872,12 @@ button {
 }
 
 @keyframes pulse-glow {
-    0%, 100% {
+
+    0%,
+    100% {
         box-shadow: 0 0 10px rgba(155, 34, 71, 0.3);
     }
+
     50% {
         box-shadow: 0 0 20px rgba(155, 34, 71, 0.6);
     }
@@ -1845,6 +1845,37 @@ Notification system */
     transform: translateX(-50%);
 }
 
+/* Legend Toggle for Mobile */
+.legend-toggle {
+    display: none;
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 0;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-gobmx-guinda, #9D2449);
+    cursor: pointer;
+    text-align: left;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.legend-toggle i {
+    transition: transform 0.3s ease;
+    width: auto !important;
+    height: auto !important;
+    float: none !important;
+    margin: 0 !important;
+    opacity: 1 !important;
+}
+
+.legend-content {
+    transition: max-height 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
+    overflow: hidden;
+}
+
 @media (max-width: 768px) {
     .legend-two-columns {
         max-width: 90vw;
@@ -1853,6 +1884,30 @@ Notification system */
     .legend-columns-container {
         grid-template-columns: 1fr;
         gap: 4px;
+    }
+
+    .legend {
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+
+    .legend-toggle {
+        display: flex;
+    }
+
+    .legend.collapsed .legend-content {
+        max-height: 0;
+        opacity: 0;
+        margin-top: 0;
+        pointer-events: none;
+    }
+
+    .legend.collapsed .legend-toggle {
+        margin-bottom: 0;
+    }
+
+    .legend.collapsed .legend-toggle i {
+        transform: rotate(180deg);
     }
 }
 

@@ -335,10 +335,34 @@
             display: flex;
         }
 
-        .sidebar-toggle-btn:hover {
+        .sidebar-toggle-btn:hover,
+        .dashboard-toggle-btn:hover {
             background: #7a1b38;
-            transform: translateY(-2px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .dashboard-toggle-btn {
+            position: absolute;
+            top: 70px;
+            right: 20px;
+            z-index: 1000;
+            background: var(--color-guinda, #9B2247);
+            color: white;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            /* By default it should show, unlike the side menu button */
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            font-family: 'Noto Sans', sans-serif;
+            text-decoration: none;
+            /* In case it's styled as a link */
         }
     </style>
 
@@ -494,6 +518,7 @@
                             </div>
                         </div>
                         <div class="toolbar-actions">
+
                             <div class="toolbar-group">
                                 <button type="button" id="refresh-data" class="btn-secondary btn-icon"
                                     title="Actualizar datos">
@@ -524,6 +549,11 @@
                         <!-- Botón flotante para abrir el sidebar del tablero -->
                         <button id="sidebar-toggle-btn" class="sidebar-toggle-btn" title="Abrir/Cerrar Tablero">
                             <i class="bi bi-layout-sidebar-reverse"></i> Proyectos
+                        </button>
+
+                        <button id="dashboard-toggle-btn" class="dashboard-toggle-btn" title="Abrir Dashboard"
+                            onclick="window.open('dashboard-analitico.html', '_blank')">
+                            <i class="bi bi-bar-chart-fill"></i> Analítico
                         </button>
 
                         <!-- El iframe del tablero -->
