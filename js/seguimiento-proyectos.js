@@ -59,7 +59,7 @@ const SEGUIMIENTO_PROYECTOS_MAPS = [
         name: 'Infraestructura Eléctrica',
         description: 'Visualización de Centrales, Gerencias, Líneas y Subestaciones',
         sheetUrl: null, // Sin hoja de datos
-        baseMap: 'carto-voyager', // Mapa base claro/color
+        baseMap: 'esri-worldimagery', // Mapa base satelital ESRI
         geojsonUrl: null,
         geojsonUrlType: null,
 
