@@ -837,8 +837,9 @@ html {
 }
 
 .mobile-menu-toggle-btn:hover {
-    transform: translateX(50%) scale(1.05);
+    transform: scale(1.05);
     box-shadow: 0 6px 16px rgba(155, 34, 71, 0.4);
+    filter: brightness(1.1);
 }
 
 .mobile-menu-toggle-btn i {
