@@ -75,10 +75,12 @@ html {
 /* FAB de capas */
 .mobile-layers-fab {
     position: fixed !important;
-    top: 5rem; /* Debajo del botón de búsqueda (1rem + 48px + gap) */
+    top: 5rem;
+    /* Debajo del botón de búsqueda (1rem + 48px + gap) */
     right: 1rem;
     z-index: 1003 !important;
-    width: 48px; /* Ajustar tamaño para que sea igual a los otros botones */
+    width: 48px;
+    /* Ajustar tamaño para que sea igual a los otros botones */
     height: 48px;
     border-radius: 50%;
     background: white;
@@ -94,14 +96,15 @@ html {
 }
 
 /* Ajuste cuando el bottom sheet está expandido si fuera necesario */
-.mobile-bottom-sheet.expanded ~ .mobile-layers-fab {
+.mobile-bottom-sheet.expanded~.mobile-layers-fab {
     /* No es necesario ajustar si está arriba */
 }
 
 .mobile-layers-panel {
     position: fixed !important;
     top: 5rem;
-    right: 4.5rem; /* Mover a la izquierda del FAB */
+    right: 4.5rem;
+    /* Mover a la izquierda del FAB */
     width: 320px;
     max-height: 60vh;
     background: white;
@@ -155,15 +158,19 @@ html {
     .mobile-layers-panel {
         right: 0.5rem;
         left: 0.5rem;
-        top: 9rem; /* Debajo del FAB */
-        bottom: auto; /* Anular bottom */
+        top: 9rem;
+        /* Debajo del FAB */
+        bottom: auto;
+        /* Anular bottom */
         width: auto;
         max-height: 55vh;
         transform-origin: top center;
     }
+
     .mobile-layers-fab {
         top: 5rem;
-        bottom: auto; /* Anular bottom */
+        bottom: auto;
+        /* Anular bottom */
         right: 1rem;
     }
 }
@@ -634,8 +641,9 @@ html {
 }
 
 .mobile-menu-toggle-btn:hover {
-    transform: translateX(50%) scale(1.05);
+    transform: scale(1.05);
     box-shadow: 0 6px 16px rgba(155, 34, 71, 0.4);
+    filter: brightness(1.1);
 }
 
 .mobile-menu-toggle-btn i {
